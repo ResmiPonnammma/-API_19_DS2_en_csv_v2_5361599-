@@ -1,0 +1,204 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Fri Mar 31 19:18:28 2023
+
+@author: 
+"""
+
+import pandas as pd
+import numpy as np
+import stats as st #self-defnied package
+import matplotlib.pyplot as plt
+import seaborn as sns
+file_Name = "API_19_DS2_en_csv_v2_5361599"
+file_Path = "D:\\Uni\\Resmi\\Assignment 2\\API_19_DS2_en_csv_v2_5361599\\"
+
+
+def read_file(filename, filepath):
+    wb_Data = pd.read_csv(filepath+filename+".csv", skiprows=3, 
+                          delimiter = ",", skipinitialspace = True) 
+ 
+    wb_Data = wb_Data.iloc[:, :-1].fillna(0)
+    #using fillna as dropna leads to a dataframe insufficient for analysis
+    wb_Data_Subset = wb_Data.iloc[:,4:]
+    wb_Data_Subset = wb_Data_Subset.apply(pd.to_numeric, errors = 'coerce')
+    wb_Data.iloc[:,4:] = wb_Data_Subset
+    #created a subset with the numerical values to ensure the values are
+    #of a floating point value
+    wb_Data_transposed =  wb_Data.transpose() 
+    wb_Data_transposed.columns = wb_Data_transposed.iloc[0] #defining colum names
+    wb_Data_transposed = wb_Data_transposed.iloc[1:,:] #indexing for a clean df
+    return wb_Data, wb_Data_transposed
+
+world_Bank_Data,  world_Bank_Data_T = read_file(file_Name, file_Path) 
+
+indicators = world_Bank_Data["Indicator Name"].unique().tolist()
+
+
+al_Data = world_Bank_Data[(world_Bank_Data["Country Name"] == 
+                            "Denmark") |
+                           (world_Bank_Data["Country Name"] == 
+                            "Georgia") |
+                           (world_Bank_Data["Country Name"] ==
+                            "Italy") |
+                           (world_Bank_Data["Country Name"] ==
+                            "Lebanon") |
+                           (world_Bank_Data["Country Name"] ==
+                            "Mexico") |
+                           (world_Bank_Data["Country Name"] ==
+                            "Mongolia") |
+                           (world_Bank_Data["Country Name"] ==
+                            "Malaysia") |
+                           (world_Bank_Data["Country Name"] ==
+                            "New Zealand") |
+                           (world_Bank_Data["Country Name"] ==
+                            "Senegal") |
+                           (world_Bank_Data["Country Name"] ==
+                            "Vanuatu")]
+al_Data = al_Data[al_Data["Indicator Name"]==
+                     "Arable land (% of land area)"]
+al_Data = al_Data.drop(al_Data.columns[4:50],axis=1)
+al_Data = al_Data.drop(columns=["Country Code"])
+al_Data = al_Data.drop(columns=["Indicator Code"])
+al_Data.set_index("Country Name", inplace=True)
+al_Data = al_Data.transpose()
+al_Data_to_plot = al_Data.iloc[1:,:].apply(pd.to_numeric, errors = 'coerce')
+al_Data_to_plot = al_Data_to_plot.drop(al_Data_to_plot.index[-1])
+
+
+al_Data_to_plot.plot.line(figsize=(10, 6))
+
+
+corr_bel = world_Bank_Data[world_Bank_Data["Country Name"] == "Belgium"]
+corr_bel = corr_bel[(corr_bel["Indicator Name"] == 
+                     "Nitrous oxide emissions (thousand metric tons of CO2 equivalent)")
+                    |
+                    (corr_bel["Indicator Name"] == 
+                                         "Methane emissions (kt of CO2 equivalent))")
+                    |
+                    (corr_bel["Indicator Name"] == 
+                                         "CO2 emissions (kt)")
+                    |
+                    (corr_bel["Indicator Name"] == 
+                                        "Electricity production from renewable sources, excluding hydroelectric (% of total)")
+                    |
+                    (corr_bel["Indicator Name"] == 
+                                         "Electricity production from oil sources (% of total)")
+                    |
+                    (corr_bel["Indicator Name"] == 
+                                         "Electricity production from nuclear sources (% of total)")
+                    |
+                    (corr_bel["Indicator Name"] == 
+                                         "Electricity production from natural gas sources (% of total)")
+                    |
+                    (corr_bel["Indicator Name"] == 
+                                         "Electricity production from hydroelectric sources (% of total)")
+                    |
+                    (corr_bel["Indicator Name"] == 
+                                         "Electricity production from coal sources (% of total)")]
+
+corr_bel = corr_bel.drop(corr_bel.columns[3:34],axis=1)
+corr_bel = corr_bel.drop(corr_bel.columns[29:35],axis=1)
+corr_bel = corr_bel.drop(corr_bel.columns[0:2],axis=1)
+corr_bel.set_index("Indicator Name", inplace=True)
+corr_bel_t = corr_bel.transpose()
+
+
+corr = corr_bel_t.corr()
+fig, ax = plt.subplots()
+im = ax.imshow(corr, cmap='coolwarm')
+
+# set the xticks and yticks
+ax.set_xticks(np.arange(len(corr)))
+ax.set_yticks(np.arange(len(corr)))
+ax.set_xticklabels(corr_bel.index.values.tolist())
+ax.set_yticklabels(corr_bel.index.values.tolist())
+
+# rotate the xtick labels for better visibility
+plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+
+# add a colorbar
+cbar = ax.figure.colorbar(im, ax=ax)
+
+# set the title
+ax.set_title("Correlation Matrix")
+
+# show the plot
+plt.show()
+
+low_income_data = l_Data = world_Bank_Data[(world_Bank_Data["Country Name"] == 
+                            "East Asia & Pacific (excluding high income)") |
+                           (world_Bank_Data["Country Name"] == 
+                            "Europe & Central Asia (excluding high income)") |
+                           (world_Bank_Data["Country Name"] ==
+                            "Latin America & Caribbean (excluding high income)") |
+                           (world_Bank_Data["Country Name"] ==
+                            "Middle East & North Africa (excluding high income)") |
+                           (world_Bank_Data["Country Name"] ==
+                            "Sub-Saharan Africa (excluding high income)") ]
+low_income_data = low_income_data[(low_income_data["Indicator Name"] == 
+                    "Terrestrial and marine protected areas (% of total territorial area)")
+                  
+                    ]
+
+low_income_data = low_income_data.drop(low_income_data.columns[3:60],axis=1)
+low_income_data = low_income_data.drop(columns=['2021'])
+low_income_data = low_income_data.drop(columns=["Country Code"])
+
+low_income_data.groupby('Country Name').plot(kind='bar', x='Country Name', figsize=(10,6), rot=90)
+
+emissions = world_Bank_Data[(world_Bank_Data["Country Name"] == 
+                            "World")]
+emissions = emissions[(emissions["Indicator Name"] == 
+                                        "Nitrous oxide emissions (thousand metric tons of CO2 equivalent)")
+                    |
+                    (emissions["Indicator Name"] == 
+                                        "Other greenhouse gas emissions, HFC, PFC and SF6 (thousand metric tons of CO2 equivalent)")
+                    |
+                    (emissions["Indicator Name"] == 
+                                        "CO2 emissions from solid fuel consumption (kt)")
+                    |
+                    (emissions["Indicator Name"] == 
+                                        "CO2 emissions from liquid fuel consumption (kt)")
+                    |
+                    (emissions["Indicator Name"] == 
+                                        "CO2 emissions from gaseous fuel consumption (kt)")
+                    ]
+
+emissions = emissions.drop(columns=["Country Code","Country Name","Indicator Code"])
+emissions.set_index("Indicator Name", inplace=True)
+emissions = emissions.iloc[:,31:57]
+e_t= emissions.transpose()
+emissions_corr = e_t.corr()
+fig, ax = plt.subplots()
+im = ax.imshow(emissions_corr, cmap='coolwarm')
+
+# set the xticks and yticks
+ax.set_xticks(np.arange(len(emissions_corr)))
+ax.set_yticks(np.arange(len(emissions_corr)))
+ax.set_xticklabels(emissions_corr.index.values.tolist())
+ax.set_yticklabels(emissions_corr.index.values.tolist())
+
+# rotate the xtick labels for better visibility
+plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+
+# add a colorbar
+cbar = ax.figure.colorbar(im, ax=ax)
+
+# set the title
+ax.set_title("Correlation Matrix")
+
+# show the plot
+plt.show()
+
+emissions_list = e_t.columns.values.tolist()
+
+for emissions in emissions_list:
+    plt.plot(e_t[emissions], label = emissions)
+plt.xlabel('Year')
+plt.ylabel('Emissions (thousand metric tons of CO2 equivalent)')
+plt.title('Greenhouse Gas Emissions by Category, 1991-1996')
+plt.xticks(rotation = 90)
+# Add legend
+plt.legend(loc='upper left', ncol=1, bbox_to_anchor=(1, 0.5))
+plt.show()
